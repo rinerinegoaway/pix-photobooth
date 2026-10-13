@@ -604,3 +604,261 @@ h1 span, h2 span {
   .booth-controls > span { width: 100%; text-align: center; }
 }
 
+
+/* . PIX frame and background customizer */
+
+.booth-panel {
+  width: min(1180px, 100%);
+}
+
+.booth-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 290px;
+  gap: 24px;
+  align-items: start;
+}
+
+.booth-main {
+  min-width: 0;
+}
+
+.booth-customizer {
+  padding: 18px;
+  border: 1px solid #f0e2e2;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.customizer-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 22px;
+  color: #ad6b7f;
+}
+
+.customizer-heading h3 {
+  margin: 0;
+  color: #59434b;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.customizer-label {
+  display: block;
+  margin: 20px 0 10px;
+  color: #987681;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+.customizer-label span {
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.frame-options {
+  display: grid;
+  gap: 8px;
+}
+
+.frame-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px;
+  text-align: left;
+  color: #59434b;
+  background: white;
+  border: 1px solid #f0e6e6;
+  border-radius: 10px;
+  transition: border-color 160ms, background 160ms;
+}
+
+.frame-option:hover,
+.frame-option.selected {
+  border-color: #c7798b;
+  background: #fff8f9;
+}
+
+.frame-option-swatch {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 42px;
+  height: 48px;
+  color: #a65e75;
+  border: 5px solid white;
+  box-shadow: 0 0 0 1px #ead8d8;
+}
+
+.frame-option-text {
+  display: grid;
+  flex: 1;
+  gap: 4px;
+}
+
+.frame-option-text strong {
+  font-size: 12px;
+}
+
+.frame-option-text small {
+  color: #9a858b;
+  font-size: 10px;
+}
+
+.option-check {
+  color: #b66e85;
+  flex-shrink: 0;
+}
+
+.background-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.background-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 5px;
+  text-align: left;
+  color: #806b72;
+  border: 1px solid #f0e6e6;
+  border-radius: 9px;
+  background: white;
+}
+
+.background-option.selected {
+  border-color: #c7798b;
+  box-shadow: 0 0 0 1px #c7798b;
+}
+
+.background-option > span {
+  display: block;
+  height: 38px;
+  border-radius: 5px;
+}
+
+.background-option small {
+  font-size: 10px;
+}
+
+.background-option > svg {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  color: #76505e;
+  background: #ffffffdd;
+  border-radius: 50%;
+}
+
+.customizer-input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid #eadbde;
+  border-radius: 8px;
+  outline: none;
+  background: #fffdfd;
+  color: #59434b;
+  font: inherit;
+  font-size: 12px;
+}
+
+.customizer-input:focus {
+  border-color: #c7798b;
+  box-shadow: 0 0 0 3px #c7798b20;
+}
+
+.customizer-input::placeholder {
+  color: #b8a5aa;
+}
+
+.strip-preview-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 23px 0 10px;
+  color: #987681;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.generated-strip-preview {
+  display: block;
+  width: min(100%, 190px);
+  height: auto;
+  margin: 0 auto;
+  border: 1px solid #eadbde;
+  border-radius: 4px;
+  box-shadow: 0 6px 20px #35262b12;
+}
+
+.empty-strip-preview {
+  min-height: 170px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  border: 1px dashed;
+  border-radius: 9px;
+  text-align: center;
+}
+
+.empty-strip-preview span {
+  color: #765560;
+  font-size: 12px;
+}
+
+.empty-strip-preview small {
+  color: #987681;
+  font-size: 10px;
+}
+
+.booth-customizer .download-button {
+  margin-top: 15px;
+  padding: 13px 10px;
+  font-size: 10px;
+}
+
+.export-error {
+  margin: 12px 0 0;
+  color: #b4233d;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 850px) {
+  .booth-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .booth-customizer {
+    margin-top: 8px;
+  }
+
+  .generated-strip-preview {
+    width: min(100%, 220px);
+  }
+}
+
+@media (max-width: 480px) {
+  .background-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .booth-customizer {
+    padding: 14px;
+  }
+}
+
