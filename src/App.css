@@ -925,4 +925,16 @@ h1 span, h2 span {
   outline-offset: 3px;
 }
 
-
+.camera-status-message {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid #f0e6e6;
+  border-radius: 9px;
+  background: #fff8fa;
+  color: #806b72;
+  font-size: 11px;
+  line-height: 1.4;
+}
