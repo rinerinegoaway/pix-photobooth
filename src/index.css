@@ -1,26 +1,360 @@
 @import "tailwindcss";
 
-:root {
-  font-family: Inter, sans-serif;
-  color: #35262b;
-  background: #fffaf7;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/*
+ * . PIX design system
+ * Two font families only: Nunito (everything) and Caveat (short handwritten accents).
+ * Six colors: ivory, butter, coral, charcoal, white, blush.
+ */
+@theme {
+  --color-paper: #fff9f0; /* warm ivory: page background */
+  --color-butter: #f7e8a4; /* soft butter: small accents */
+  --color-coral: #ff5576; /* actions, hearts, selected states */
+  --color-ink: #242124; /* charcoal: text */
+  --color-white: #ffffff; /* cards, frames */
+  --color-blush: #ffe3e8; /* secondary surfaces */
+  --color-muted: #6a6368; /* charcoal, softened for body copy (5.3:1 on ivory) */
+  --color-line: rgb(36 33 36 / 0.12);
+
+  --font-ui: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-hand: "Caveat", "Segoe Script", "Bradley Hand", cursive;
+  /* Headings use the primary family too; kept as a token so one change restyles every heading. */
+  --font-display: var(--font-ui);
+
+  --radius-card: 20px;
+  --radius-control: 14px;
+  --shadow-soft: 0 10px 30px -14px rgb(36 33 36 / 0.22);
+  --shadow-lift: 0 14px 34px -14px rgb(36 33 36 / 0.3);
 }
 
-* {
-  box-sizing: border-box;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+  body {
+    margin: 0;
+    min-width: 320px;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-ui);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+  button {
+    cursor: pointer;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-ink);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  h1,
+  h2,
+  h3 {
+    margin: 0;
+    font-weight: 800;
+  }
+  p {
+    margin: 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
 }
 
-html {
-  min-width: 320px;
-  min-height: 100%;
+@layer components {
+  /* ---- Type scale ---- */
+  .t-display {
+    font-size: clamp(2.4rem, 5.6vw, 4rem);
+    line-height: 1.06;
+    letter-spacing: -0.03em;
+    font-weight: 800;
+  }
+  .t-page {
+    font-size: clamp(1.8rem, 3.6vw, 2.5rem);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+  }
+  .t-section {
+    font-size: clamp(1.25rem, 2.2vw, 1.5rem);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    font-weight: 800;
+  }
+  .t-body {
+    font-size: 1.0625rem;
+    color: var(--color-muted);
+  }
+  .t-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-ink);
+  }
+  .t-meta {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  /* The only place the accent family is used. Always short, always coral or charcoal. */
+  .t-hand {
+    font-family: var(--font-hand);
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+
+  /* ---- Layout ---- */
+  .container-x {
+    width: 100%;
+    max-width: 70rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 768px) {
+    .container-x {
+      padding-inline: 2rem;
+    }
+  }
+  .section {
+    padding-block: 4rem;
+  }
+  @media (min-width: 768px) {
+    .section {
+      padding-block: 5.5rem;
+    }
+  }
+
+  /* Soft butter and blush washes with a delicate dotted pattern. */
+  .paper-texture {
+    background-color: var(--color-paper);
+    background-image:
+      radial-gradient(rgb(36 33 36 / 0.1) 1px, transparent 1.4px),
+      radial-gradient(60rem 28rem at 8% -10%, rgb(247 232 164 / 0.55), transparent 70%),
+      radial-gradient(46rem 26rem at 100% 100%, rgb(255 227 232 / 0.8), transparent 70%);
+    background-size:
+      22px 22px,
+      auto,
+      auto;
+  }
+
+  /* ---- Buttons ---- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 3rem;
+    padding: 0.65rem 1.4rem;
+    border: 1.5px solid transparent;
+    border-radius: var(--radius-control);
+    font-weight: 800;
+    font-size: 0.95rem;
+    line-height: 1.2;
+    text-decoration: none;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease,
+      background-color 0.15s ease;
+  }
+  .btn:disabled,
+  .btn[aria-disabled="true"] {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .btn:not(:disabled):active {
+    transform: translateY(1px) scale(0.99);
+  }
+  .btn-primary {
+    background: var(--color-coral);
+    color: var(--color-ink);
+    box-shadow: 0 8px 18px -10px rgb(255 85 118 / 0.9);
+  }
+  .btn-primary:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 22px -10px rgb(255 85 118 / 0.95);
+    background: #ff6584;
+  }
+  .btn-secondary {
+    background: var(--color-white);
+    color: var(--color-ink);
+    border-color: var(--color-line);
+    box-shadow: 0 4px 12px -8px rgb(36 33 36 / 0.3);
+  }
+  .btn-secondary:not(:disabled):hover {
+    transform: translateY(-2px);
+    border-color: var(--color-ink);
+  }
+  .btn-quiet {
+    background: transparent;
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    padding-inline: 0.75rem;
+  }
+  .btn-danger {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+  .btn-sm {
+    min-height: 2.5rem;
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  /* ---- Surfaces ---- */
+  .card {
+    background: var(--color-white);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+  }
+  .card-print {
+    box-shadow: var(--shadow-soft);
+  }
+  .field {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.6rem 0.9rem;
+    background: var(--color-white);
+    color: var(--color-ink);
+    border: 1.5px solid var(--color-line);
+    border-radius: var(--radius-control);
+    transition: border-color 0.15s ease;
+  }
+  .field:hover {
+    border-color: rgb(36 33 36 / 0.35);
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--color-coral);
+    box-shadow: 0 0 0 4px rgb(255 85 118 / 0.2);
+  }
+  .field::placeholder {
+    color: #9a9297;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    background: var(--color-white);
+    border: 1px solid var(--color-line);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.8rem;
+    text-align: left;
+    background: var(--color-white);
+    border: 1.5px solid var(--color-line);
+    border-radius: var(--radius-control);
+    font-weight: 700;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease;
+  }
+  .option:hover {
+    border-color: rgb(36 33 36 / 0.4);
+  }
+  .option[aria-pressed="true"],
+  .option[aria-checked="true"] {
+    background: var(--color-blush);
+    border-color: var(--color-coral);
+    box-shadow: 0 0 0 1px var(--color-coral);
+  }
+  .dot-live {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 999px;
+    background: currentColor;
+  }
 }
 
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
+@keyframes pix-pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  35% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes pix-flash {
+  0% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes pix-pulse {
+  50% {
+    opacity: 0.4;
+  }
+}
+.anim-pop {
+  animation: pix-pop 0.5s ease-out;
+}
+.anim-flash {
+  animation: pix-flash 0.35s ease-out forwards;
+}
+.anim-pulse {
+  animation: pix-pulse 1.4s ease-in-out infinite;
+}
+@keyframes pix-blade-top {
+  0% {
+    transform: translateY(-100%);
+  }
+  35% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-100%);
+  }
+}
+@keyframes pix-blade-bottom {
+  0% {
+    transform: translateY(100%);
+  }
+  35% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+.anim-blade-top {
+  animation: pix-blade-top 0.28s ease-in-out forwards;
+}
+.anim-blade-bottom {
+  animation: pix-blade-bottom 0.28s ease-in-out forwards;
 }

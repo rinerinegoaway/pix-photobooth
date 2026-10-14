@@ -4,19 +4,25 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "bun run --parallel dev:web dev:server",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "dev:web": "vite",
+    "dev:server": "bun --watch server/index.ts",
+    "server": "bun server/index.ts",
+    "start": "bun run build && bun server/index.ts",
+    "test": "bun test",
+    "check": "tsc -b && oxlint && bun test"
   },
   "dependencies": {
     "lucide-react": "^1.56.0",
-    "motion": "^14.1.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
+    "@types/bun": "^1.4.3",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
