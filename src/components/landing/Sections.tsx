@@ -227,7 +227,7 @@ export function PrivacySection() {
           ))}
         </div>
         <p className="mt-5 max-w-2xl text-sm">
-          The camera only starts after you press a button, and it switches off when you leave the booth. If your network blocks direct connections, video may need a relay server, which would carry encrypted video without being able to watch it.
+          The camera only starts after you press a button, and it switches off when you leave the booth. If your network blocks direct connections, video may need a relay server, which would carry encrypted video without being able to watch it. Separately, our server keeps two anonymous running totals (strips finished and sessions started) and any feedback you choose to send. Neither includes your photos or video.
         </p>
       </div>
     </section>

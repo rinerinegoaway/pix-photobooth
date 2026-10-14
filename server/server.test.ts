@@ -1,11 +1,18 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
+import { mkdtempSync, readFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import type { ClientMessage, ServerMessage } from '../src/lib/protocol.ts'
+
+const dataDir = mkdtempSync(join(tmpdir(), 'pix-test-'))
 
 let base = ''
 let stop: () => void = () => {}
 
 beforeAll(async () => {
   process.env.PORT = '0'
+  process.env.DATA_DIR = dataDir
+  process.env.ROOMS_PER_10_MIN = '1000'
   const mod = await import('./index.ts')
   base = `127.0.0.1:${mod.server.port}`
   stop = () => void mod.server.stop(true)
@@ -204,5 +211,37 @@ describe('rooms', () => {
     client.send({ t: 'countdown', shot: 0 })
     expect((await client.next('error')).code).toBe('not-allowed')
     client.ws.close()
+  })
+})
+
+describe('community', () => {
+  const post = (path: string, body: unknown) =>
+    fetch(`http://${base}${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+
+  test('stores valid feedback and rejects bad input', async () => {
+    const ok = await post('/api/feedback', { type: 'feature', message: 'Please add a heart sticker pack.', name: 'Rie', email: 'rie@example.com' })
+    expect(ok.status).toBe(201)
+    const line = readFileSync(join(dataDir, 'feedback.jsonl'), 'utf8').trim().split(String.fromCharCode(10)).pop() ?? ''
+    expect(JSON.parse(line)).toMatchObject({ type: 'feature', name: 'Rie', message: 'Please add a heart sticker pack.' })
+
+    expect((await post('/api/feedback', { type: 'bug', message: 'short' })).status).toBe(400)
+    expect((await post('/api/feedback', { type: 'nope', message: 'a perfectly long message' })).status).toBe(400)
+    expect((await post('/api/feedback', { type: 'bug', message: 'a perfectly long message', email: 'not-an-email' })).status).toBe(400)
+    // honeypot filled in by a bot
+    expect((await post('/api/feedback', { type: 'bug', message: 'a perfectly long message', website: 'spam.example' })).status).toBe(400)
+  })
+
+  test('counts strips and sessions, and reports active rooms from real connections', async () => {
+    const before = (await (await fetch(`http://${base}/api/stats`)).json()) as { strips: number; sessions: number; active: number; members: null }
+    expect(before.members).toBeNull()
+    expect((await post('/api/event', { type: 'strip' })).status).toBe(204)
+    expect((await post('/api/event', { type: 'bogus' })).status).toBe(400)
+
+    const { host, guest } = await makeRoom()
+    const during = (await (await fetch(`http://${base}/api/stats`)).json()) as typeof before
+    expect(during.strips).toBe(before.strips + 1)
+    expect(during.active).toBe(before.active + 1)
+    host.ws.close()
+    guest.ws.close()
   })
 })

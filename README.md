@@ -38,7 +38,7 @@ bun test           # signaling-server tests (rooms, resume, coordinated countdow
 | Variable | Purpose |
 | --- | --- |
 | `PORT` | Server port (default 8787) |
-| `ALLOWED_ORIGINS` | Comma-separated origins allowed to open the WebSocket (e.g. `https://pix.example`). Empty allows any. |
+| `ALLOWED_ORIGINS` | Comma-separated origins allowed to open the WebSocket and call the API (e.g. `https://pix.example`). Empty allows any. |
 | `TRUST_PROXY=1` | Use `X-Forwarded-For` for rate limiting |
 | `STUN_URLS` | Default `stun:stun.l.google.com:19302` (Google's public STUN) |
 | `TURN_URLS`, `TURN_USERNAME`, `TURN_CREDENTIAL` | A TURN relay for networks that block direct video. **Not configured by default**, so strict NATs/corporate networks may fail to connect until you add one. |
@@ -70,6 +70,19 @@ Optional, off by default ("Save a behind-the-scenes video" in the session panel)
 - In the long-distance booth, the recording shows **both** feeds as they appear on your screen. It only starts if both people turn "Record our moments together" on, and it is dropped if the connection is interrupted. It never includes sound, because the shared call carries video only.
 - Recordings stay in the browser (a local file URL). Nothing is uploaded.
 - Cancelling or leaving mid-session discards the partial recording.
+
+## Community & live activity
+
+Two landing-page sections backed by `server/community.ts`:
+
+- **Feedback form** (`POST /api/feedback`): validated on the client and again on the server (type, 10–2000 character message, optional name/email, honeypot field, 5 messages per 10 minutes per IP). Messages are appended to `data/feedback.jsonl` on the host, one JSON object per line. The page only shows "Thank you" after the server confirms it saved the message; if the server is unreachable it shows an error. Set `FEEDBACK_WEBHOOK_URL` to also forward each message to a Slack/Discord-style webhook. Read the inbox with `cat data/feedback.jsonl`.
+- **Live booth moments** (`GET /api/stats`, `POST /api/event`):
+  - *Photo strips created*: one anonymous ping when a person reaches the final screen of a session.
+  - *Booth sessions*: one ping when a four-photo solo/together session starts; shared booths are counted by the server when the first shot of a room's session begins.
+  - *Active sessions now*: shared booth rooms with at least one person connected right now, read from the server's live room table.
+  - *Community members*: **not tracked**. There are no accounts, so the page shows an "unavailable" state instead of a number. Add accounts before showing a real figure.
+  - Totals live in `data/stats.json`. Counters are self-reported by browsers and unauthenticated, so treat them as estimates. If the server can't be reached, the page shows "unavailable", never made-up numbers.
+- `DATA_DIR` changes where both files are stored (default `./data`, git-ignored). Back it up if you care about the totals and the inbox. Set `VITE_API_URL` at build time if the API lives on another origin (and list the site in `ALLOWED_ORIGINS`).
 
 ## Privacy summary
 

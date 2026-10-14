@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# runtime data (feedback inbox, usage counters)
+data/
+
+# runtime data (feedback inbox, usage counters)
+data/

@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { downloadBlob } from '../../lib/capture'
+import { sendEvent } from '../../lib/community'
 import { renderStripBlob } from '../../lib/strip'
 import type { Shot, StripStyle } from '../../lib/strip'
 import type { RecordingState } from '../../hooks/useSessionRecording'
@@ -36,6 +37,15 @@ export function PostCapture({ shots, style, onStyleChange, shared = false, onRet
 
   useEffect(() => {
     window.scrollTo({ top: 0 })
+  }, [stage])
+
+  // Reaching the final screen means one finished strip. Anonymous counter: only the event name is sent.
+  const counted = useRef(false)
+  useEffect(() => {
+    if (stage === 'result' && !counted.current) {
+      counted.current = true
+      sendEvent('strip')
+    }
   }, [stage])
 
   async function downloadPng() {

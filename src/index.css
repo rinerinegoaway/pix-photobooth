@@ -358,3 +358,43 @@
 .anim-blade-bottom {
   animation: pix-blade-bottom 0.28s ease-in-out forwards;
 }
+
+/* Feedback dialog: fade/slide in, quick fade out. */
+dialog.pix-dialog[open] {
+  animation: pix-dialog-in 0.22s ease-out;
+}
+dialog.pix-dialog.is-closing {
+  animation: pix-dialog-out 0.16s ease-in forwards;
+}
+dialog.pix-dialog::backdrop {
+  background: rgb(36 33 36 / 0.45);
+  backdrop-filter: blur(2px);
+}
+dialog.pix-dialog[open]::backdrop {
+  animation: pix-fade-in 0.22s ease-out;
+}
+dialog.pix-dialog.is-closing::backdrop {
+  animation: pix-fade-out 0.16s ease-in forwards;
+}
+@keyframes pix-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+}
+@keyframes pix-dialog-out {
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+@keyframes pix-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes pix-fade-out {
+  to {
+    opacity: 0;
+  }
+}

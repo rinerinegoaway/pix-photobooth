@@ -5,13 +5,15 @@
 // What this process sees:  display names, WebRTC session descriptions and ICE candidates
 //                          (which contain network addresses), and countdown timing.
 // What it never sees:      camera video, photos or recordings. Those travel peer-to-peer.
-// What it stores:          an in-memory room table, dropped on expiry or restart. Nothing is
-//                          written to disk and room ids are never logged.
+// What it stores:          an in-memory room table, dropped on expiry or restart; room ids are
+//                          never logged. Separately (see community.ts) it writes anonymous usage
+//                          totals and submitted feedback to DATA_DIR. Never photos or video.
 
 import { existsSync } from 'node:fs'
 import { join, normalize, sep } from 'node:path'
 import { COUNTDOWN_CHOICES, COUNTDOWN_SECONDS, SHOTS_PER_SESSION } from '../src/lib/protocol.ts'
 import type { ClientMessage, ErrorCode, ServerMessage } from '../src/lib/protocol.ts'
+import { handleCommunityRequest, recordEvent } from './community.ts'
 
 const PORT = Number(process.env.PORT ?? 8787)
 const DIST = join(import.meta.dir, '..', 'dist')
@@ -25,6 +27,7 @@ const ROOM_MAX_AGE_MS = 3 * 60 * 60 * 1000
 const ROOM_EMPTY_GRACE_MS = 5 * 60 * 1000
 const PEER_RESUME_GRACE_MS = 10 * 60 * 1000
 const MAX_ROOMS = 2000
+const ROOMS_PER_10_MIN = Number(process.env.ROOMS_PER_10_MIN ?? 8)
 const CAPTURE_ACK_WAIT_MS = 5000
 const COUNTDOWN_LEAD_MS = 700
 const MAX_NAME = 24
@@ -66,11 +69,19 @@ interface Room {
   seats: Seat[]
   countdown: Countdown | null
   emptySince: number | null
+  lastSessionAt: number
 }
 
 const rooms = new Map<string, Room>()
 
 // ---------- helpers ----------
+
+/** Active sessions = shared booth rooms where at least one participant is connected right now. */
+function countActiveRooms(): number {
+  let active = 0
+  for (const room of rooms.values()) if (room.seats.some(seat => seat.ws !== null)) active++
+  return active
+}
 
 // Crockford-style alphabet without look-alike characters. 16 symbols ≈ 78 bits.
 const ALPHABET = 'ABCDEFGHJKMNPQRSTVWXYZ23456789'
@@ -204,7 +215,7 @@ function attach(ws: Ws, room: Room, seat: Seat) {
 }
 
 function handleCreate(ws: Ws, message: Extract<ClientMessage, { t: 'create' }>) {
-  if (!allow(`create:${ws.data.ip}`, 8, 10 * 60 * 1000)) {
+  if (!allow(`create:${ws.data.ip}`, ROOMS_PER_10_MIN, 10 * 60 * 1000)) {
     return fail(ws, 'rate-limited', 'Too many rooms were created from this network. Try again in a few minutes.')
   }
   if (rooms.size >= MAX_ROOMS) return fail(ws, 'server-busy', 'The server is busy. Try again shortly.')
@@ -219,7 +230,7 @@ function handleCreate(ws: Ws, message: Extract<ClientMessage, { t: 'create' }>) 
     ready: false,
     disconnectedAt: null,
   }
-  const room: Room = { id, createdAt: Date.now(), seats: [seat], countdown: null, emptySince: null }
+  const room: Room = { id, createdAt: Date.now(), seats: [seat], countdown: null, emptySince: null, lastSessionAt: 0 }
   rooms.set(id, room)
   attach(ws, room, seat)
   send(ws, describeJoin(room, seat))
@@ -284,6 +295,11 @@ function startCountdown(room: Room, seat: Seat, shot: unknown, requested: unknow
   if (!seat.ready || !other.ready) return fail(ws, 'not-ready', 'Both cameras need to be ready first.')
   if (room.countdown) return fail(ws, 'busy', 'A countdown is already running.')
 
+  // The first shot starts a session. Retaking photo 1 shortly afterwards is the same session.
+  if (shot === 0 && Date.now() - room.lastSessionAt > 5 * 60 * 1000) {
+    room.lastSessionAt = Date.now()
+    recordEvent('session')
+  }
   const now = Date.now()
   const seconds = COUNTDOWN_CHOICES.find(choice => choice === requested) ?? COUNTDOWN_SECONDS
   const startsAt = now + COUNTDOWN_LEAD_MS
@@ -490,6 +506,15 @@ const server = Bun.serve<SocketData>({
       })
       return upgraded ? undefined : new Response('Expected a WebSocket upgrade', { status: 426 })
     }
+    const origin = req.headers.get('origin')
+    const community = await handleCommunityRequest(
+      req,
+      url,
+      clientIp(req, srv),
+      countActiveRooms(),
+      origin && ALLOWED_ORIGINS.includes(origin) ? origin : null,
+    )
+    if (community) return community
     if (url.pathname === '/api/ice') {
       return Response.json(iceConfig(), { headers: { 'Cache-Control': 'no-store' } })
     }

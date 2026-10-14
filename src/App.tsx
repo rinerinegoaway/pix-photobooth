@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
 import { useRoute } from './hooks/useRoute'
 import { BoothModeSelector } from './components/landing/BoothModeSelector'
+import { CommunitySection } from './components/landing/CommunitySection'
 import { HeroSection } from './components/landing/HeroSection'
+import { LiveActivitySection } from './components/landing/LiveActivitySection'
 import { BoothExperience, Faq, HowItWorks, MadeForDistance, MakeItYours, PrivacySection } from './components/landing/Sections'
 import { SiteFooter } from './components/layout/SiteFooter'
 import { SiteHeader } from './components/layout/SiteHeader'
@@ -30,7 +32,9 @@ function App() {
             <BoothExperience />
             <MadeForDistance />
             <MakeItYours />
+            <LiveActivitySection />
             <PrivacySection />
+            <CommunitySection />
             <Faq />
           </>
         )}

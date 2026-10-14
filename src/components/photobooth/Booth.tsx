@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useCamera } from '../../hooks/useCamera'
 import { formatElapsed, useSessionRecording } from '../../hooks/useSessionRecording'
 import { grabFrame } from '../../lib/capture'
+import { sendEvent } from '../../lib/community'
 import { consumeAutoStart } from '../../lib/nav'
 import { SHOTS_PER_SESSION } from '../../lib/protocol'
 import { playShutter, primeShutter } from '../../lib/shutter'
@@ -91,6 +92,7 @@ export function Booth({ mode }: { mode: 'solo' | 'together' }) {
       setRunning(true)
       setError('')
       primeShutter() // sound is only allowed after a click, and this runs from one
+      if (slots.length === SHOTS_PER_SESSION) sendEvent('session') // anonymous counter, no content
       let recordingActive = false
       try {
         // A behind-the-scenes video covers a whole four-photo session, starting before the first countdown.
