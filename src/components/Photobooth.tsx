@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react'
 import {
   Camera,
@@ -16,6 +15,7 @@ type PhotoboothProps = {
 
 type FrameId = 'sweetheart' | 'sunday' | 'love-letter'
 type BackgroundId = 'blush' | 'cream' | 'lavender' | 'sage'
+type StickerId = 'hearts' | 'stars' | 'flowers' | 'ribbons'
 
 const frames: {
   id: FrameId
@@ -23,24 +23,9 @@ const frames: {
   description: string
   color: string
 }[] = [
-  {
-    id: 'sweetheart',
-    name: 'Sweetheart',
-    description: 'Romantic pink',
-    color: '#f3d8df',
-  },
-  {
-    id: 'sunday',
-    name: 'Sunday Film',
-    description: 'Warm vintage',
-    color: '#e9ddc8',
-  },
-  {
-    id: 'love-letter',
-    name: 'Love Letter',
-    description: 'Dreamy lilac',
-    color: '#e4d9ef',
-  },
+  { id: 'sweetheart', name: 'Sweetheart', description: 'Romantic pink', color: '#f3d8df' },
+  { id: 'sunday', name: 'Sunday Film', description: 'Warm vintage', color: '#e9ddc8' },
+  { id: 'love-letter', name: 'Love Letter', description: 'Dreamy lilac', color: '#e4d9ef' },
 ]
 
 const backgrounds: {
@@ -54,14 +39,16 @@ const backgrounds: {
   { id: 'sage', name: 'Soft Sage', color: '#e3eadf' },
 ]
 
+const stickers: { id: StickerId; name: string; symbol: string }[] = [
+  { id: 'hearts', name: 'Hearts', symbol: '♡' },
+  { id: 'stars', name: 'Stars', symbol: '✦' },
+  { id: 'flowers', name: 'Flowers', symbol: '✿' },
+  { id: 'ribbons', name: 'Ribbons', symbol: '🎀' },
+]
+
 const frameDetails: Record<
   FrameId,
-  {
-    paper: string
-    ink: string
-    accent: string
-    footer: string
-  }
+  { paper: string; ink: string; accent: string; footer: string }
 > = {
   sweetheart: {
     paper: '#fff9fa',
@@ -91,11 +78,7 @@ function drawCover(
   width: number,
   height: number,
 ) {
-  const scale = Math.max(
-    width / image.naturalWidth,
-    height / image.naturalHeight,
-  )
-
+  const scale = Math.max(width / image.naturalWidth, height / image.naturalHeight)
   const sourceWidth = width / scale
   const sourceHeight = height / scale
   const sourceX = (image.naturalWidth - sourceWidth) / 2
@@ -117,10 +100,8 @@ function drawCover(
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new window.Image()
-
     image.onload = () => resolve(image)
     image.onerror = () => reject(new Error('Could not load a photo.'))
-
     image.src = src
   })
 }
@@ -150,15 +131,17 @@ export default function Photobooth({ onClose }: PhotoboothProps) {
   const streamRef = useRef<MediaStream | null>(null)
 
   const [cameraReady, setCameraReady] = useState(false)
+  const [availableCameras, setAvailableCameras] = useState<MediaDeviceInfo[]>([])
+  const [activeCameraId, setActiveCameraId] = useState('')
   const [cameraError, setCameraError] = useState('')
   const [countdown, setCountdown] = useState<number | null>(null)
+  const [flashVisible, setFlashVisible] = useState(false)
   const [shots, setShots] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
 
-  const [selectedFrame, setSelectedFrame] =
-    useState<FrameId>('sweetheart')
-  const [selectedBackground, setSelectedBackground] =
-    useState<BackgroundId>('blush')
+  const [selectedFrame, setSelectedFrame] = useState<FrameId>('sweetheart')
+  const [selectedBackground, setSelectedBackground] = useState<BackgroundId>('blush')
+  const [selectedStickers, setSelectedStickers] = useState<StickerId[]>(['hearts'])
 
   const [caption, setCaption] = useState('our little moments')
   const [coupleNames, setCoupleNames] = useState('')
@@ -166,43 +149,64 @@ export default function Photobooth({ onClose }: PhotoboothProps) {
   const [exportError, setExportError] = useState('')
 
   const frame = frameDetails[selectedFrame]
-  const background = backgrounds.find(
-    item => item.id === selectedBackground,
-  )!
+  const background = backgrounds.find(item => item.id === selectedBackground)!
 
   useEffect(() => {
     let active = true
 
     async function startCamera() {
+      setCameraReady(false)
+      setCameraError('')
+
       try {
         if (!navigator.mediaDevices?.getUserMedia) {
           throw new Error('This browser does not support camera access.')
         }
 
-        const stream = await navigator.mediaDevices.getUserMedia({
+        const constraints: MediaStreamConstraints = {
           audio: false,
-          video: {
-            facingMode: 'user',
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-          },
-        })
+          video: activeCameraId
+            ? {
+                deviceId: { exact: activeCameraId },
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+              }
+            : {
+                facingMode: 'user',
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+              },
+        }
+
+        const stream = await navigator.mediaDevices.getUserMedia(constraints)
 
         if (!active) {
           stream.getTracks().forEach(track => track.stop())
           return
         }
 
+        streamRef.current?.getTracks().forEach(track => track.stop())
         streamRef.current = stream
 
         if (videoRef.current) {
           videoRef.current.srcObject = stream
           await videoRef.current.play()
-
           if (active) setCameraReady(true)
+        }
+
+        const devices = await navigator.mediaDevices.enumerateDevices()
+        if (active) {
+          const cameras = devices.filter(device => device.kind === 'videoinput')
+          setAvailableCameras(cameras)
+
+          const currentId = stream.getVideoTracks()[0]?.getSettings().deviceId
+          if (currentId && currentId !== activeCameraId) {
+            setActiveCameraId(currentId)
+          }
         }
       } catch (error) {
         if (active) {
+          setCameraReady(false)
           setCameraError(
             error instanceof Error
               ? error.message
@@ -219,20 +223,25 @@ export default function Photobooth({ onClose }: PhotoboothProps) {
       streamRef.current?.getTracks().forEach(track => track.stop())
       streamRef.current = null
     }
-  }, [])
+  }, [activeCameraId])
 
   useEffect(() => {
-    if (!shots.length) {
-      setPreviewUrl('')
+    if (shots.length !== 4) {
+      setPreviewUrl(previous => {
+        if (previous) URL.revokeObjectURL(previous)
+        return ''
+      })
       return
     }
 
     let cancelled = false
+    let createdUrl = ''
 
     async function updatePreview() {
       try {
         const blob = await renderStrip(shots)
         const url = URL.createObjectURL(blob)
+        createdUrl = url
 
         if (cancelled) {
           URL.revokeObjectURL(url)
@@ -243,8 +252,13 @@ export default function Photobooth({ onClose }: PhotoboothProps) {
           if (previous) URL.revokeObjectURL(previous)
           return url
         })
-      } catch {
-        if (!cancelled) setExportError('Could not generate the preview.')
+        setExportError('')
+      } catch (error) {
+        if (!cancelled) {
+          setExportError(
+            error instanceof Error ? error.message : 'Could not generate the preview.',
+          )
+        }
       }
     }
 
@@ -252,10 +266,21 @@ export default function Photobooth({ onClose }: PhotoboothProps) {
 
     return () => {
       cancelled = true
+      // The state cleanup above revokes the URL when the preview is replaced.
+      // If this effect is cancelled before the URL is committed, revoke it here.
+      if (createdUrl && cancelled) {
+        // Avoid revoking the URL that is currently being displayed.
+        // The next effect or component cleanup handles displayed URLs.
+      }
     }
-    // Rendering depends on the selected design and captured photos.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shots, selectedFrame, selectedBackground, caption, coupleNames])
+  }, [
+    shots,
+    selectedFrame,
+    selectedBackground,
+    selectedStickers,
+    caption,
+    coupleNames,
+  ])
 
   useEffect(() => {
     return () => {
@@ -264,14 +289,7 @@ export default function Photobooth({ onClose }: PhotoboothProps) {
   }, [previewUrl])
 
   async function captureShot() {
-    if (
-      !videoRef.current ||
-      !canvasRef.current ||
-      busy ||
-      shots.length >= 4
-    ) {
-      return
-    }
+    if (!videoRef.current || !canvasRef.current || busy || shots.length >= 4) return
 
     setBusy(true)
     setExportError('')
@@ -283,6 +301,8 @@ export default function Photobooth({ onClose }: PhotoboothProps) {
       }
 
       setCountdown(null)
+      setFlashVisible(true)
+      window.setTimeout(() => setFlashVisible(false), 180)
 
       const video = videoRef.current
       const canvas = canvasRef.current
@@ -303,9 +323,7 @@ export default function Photobooth({ onClose }: PhotoboothProps) {
       context.drawImage(video, 0, 0, canvas.width, canvas.height)
       context.restore()
 
-      const image = canvas.toDataURL('image/jpeg', 0.92)
-
-      setShots(previous => [...previous, image])
+      setShots(previous => [...previous, canvas.toDataURL('image/jpeg', 0.92)])
     } catch (error) {
       setExportError(
         error instanceof Error ? error.message : 'Could not capture the photo.',
@@ -332,7 +350,6 @@ export default function Photobooth({ onClose }: PhotoboothProps) {
     if (!context) throw new Error('Canvas rendering is unavailable.')
 
     const images = await Promise.all(photos.map(loadImage))
-
     const width = 720
     const padding = 32
     const photoHeight = 410
@@ -345,15 +362,12 @@ export default function Photobooth({ onClose }: PhotoboothProps) {
     canvas.height =
       padding + headerHeight + photoHeight * 4 + gap * 3 + footerHeight
 
-    // Background fills the entire exported canvas.
     context.fillStyle = background.color
     context.fillRect(0, 0, width, canvas.height)
 
-    // Paper/frame color sits inside the background.
     context.fillStyle = frame.paper
     context.fillRect(14, 14, width - 28, canvas.height - 28)
 
-    // Decorative corner marks depend on the selected frame.
     context.fillStyle = frame.accent
     drawHeart(context, 34, 38, 22)
     drawHeart(context, width - 56, 38, 22)
@@ -384,26 +398,20 @@ export default function Photobooth({ onClose }: PhotoboothProps) {
       const y = padding + headerHeight + index * (photoHeight + gap)
 
       context.save()
-
-      // A subtle shadow separates the photo from the frame.
       context.shadowColor = '#35262b18'
       context.shadowBlur = 8
       context.shadowOffsetY = 2
       context.fillStyle = '#ffffff'
       context.fillRect(x - 2, y - 2, photoWidth + 4, photoHeight + 4)
-
       context.restore()
 
       context.save()
       context.beginPath()
       context.rect(x, y, photoWidth, photoHeight)
       context.clip()
-
       drawCover(context, image, x, y, photoWidth, photoHeight)
-
       context.restore()
 
-      // Frame-specific decorative marks on each photograph.
       context.fillStyle = frame.accent
       if (selectedFrame === 'sweetheart') {
         drawHeart(context, x + 16, y + 16, 24)
@@ -413,6 +421,37 @@ export default function Photobooth({ onClose }: PhotoboothProps) {
         context.font = '26px sans-serif'
         context.fillText('✦', x + photoWidth - 24, y + 22)
       }
+    })
+
+    // Draw selected stickers after the photographs so they appear on top.
+    images.forEach((_, photoIndex) => {
+      const photoY = padding + headerHeight + photoIndex * (photoHeight + gap)
+
+      selectedStickers.forEach((stickerId, stickerIndex) => {
+        const stickerX = padding + 28 + stickerIndex * 38
+        const stickerY = photoY + 32
+
+        context.save()
+        context.fillStyle = frame.accent
+        context.textAlign = 'center'
+        context.textBaseline = 'middle'
+
+        if (stickerId === 'hearts') {
+          drawHeart(context, stickerX - 12, stickerY - 12, 24)
+        } else {
+          const symbol =
+            stickerId === 'stars'
+              ? '✦'
+              : stickerId === 'flowers'
+                ? '✿'
+                : '🎀'
+
+          context.font = '26px sans-serif'
+          context.fillText(symbol, stickerX, stickerY)
+        }
+
+        context.restore()
+      })
     })
 
     const footerY = canvas.height - 42
@@ -438,11 +477,9 @@ export default function Photobooth({ onClose }: PhotoboothProps) {
       const blob = await renderStrip(shots)
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
-
       link.href = url
       link.download = 'pix-couple-photostrip.png'
       link.click()
-
       window.setTimeout(() => URL.revokeObjectURL(url), 1000)
     } catch (error) {
       setExportError(
@@ -459,7 +496,6 @@ export default function Photobooth({ onClose }: PhotoboothProps) {
             <span className="booth-brand">. PIX</span>
             <p>Little moments, captured together.</p>
           </div>
-
           <button
             type="button"
             className="booth-close"
@@ -490,25 +526,52 @@ export default function Photobooth({ onClose }: PhotoboothProps) {
                     className="camera-video"
                     style={{ transform: 'scaleX(-1)' }}
                   />
-
                   {!cameraReady && (
                     <p className="camera-loading">Opening your camera...</p>
                   )}
-
                   {cameraReady && (
                     <div className="position-guide">
                       <span>Stand close together ♡</span>
                     </div>
                   )}
-
                   {countdown !== null && (
                     <div className="countdown-overlay">{countdown}</div>
+                  )}
+                  {flashVisible && (
+                    <div
+                      className="camera-flash"
+                      aria-hidden="true"
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        zIndex: 20,
+                        background: 'rgba(255, 255, 255, 0.96)',
+                        pointerEvents: 'none',
+                      }}
+                    />
                   )}
                 </div>
 
                 <div className="booth-controls">
                   <span>PHOTO {Math.min(shots.length + 1, 4)} OF 4</span>
-
+                  {availableCameras.length > 1 && (
+                    <button
+                      type="button"
+                      className="secondary-button"
+                      onClick={() => {
+                        const currentIndex = availableCameras.findIndex(
+                          camera => camera.deviceId === activeCameraId,
+                        )
+                        const nextCamera =
+                          availableCameras[(currentIndex + 1) % availableCameras.length]
+                        if (nextCamera) setActiveCameraId(nextCamera.deviceId)
+                      }}
+                      disabled={!cameraReady || busy}
+                      aria-label="Switch camera"
+                    >
+                      <RotateCcw size={16} /> Switch camera
+                    </button>
+                  )}
                   <button
                     type="button"
                     className="primary-button"
@@ -522,7 +585,6 @@ export default function Photobooth({ onClose }: PhotoboothProps) {
                         ? 'ALL PHOTOS TAKEN'
                         : 'TAKE PHOTO'}
                   </button>
-
                   <button
                     type="button"
                     className="secondary-button"
@@ -541,10 +603,7 @@ export default function Photobooth({ onClose }: PhotoboothProps) {
                     <div className="shot-thumbnail" key={index}>
                       {shots[index] ? (
                         <>
-                          <img
-                            src={shots[index]}
-                            alt={`Captured photo ${index + 1}`}
-                          />
+                          <img src={shots[index]} alt={`Captured photo ${index + 1}`} />
                           <button
                             type="button"
                             onClick={() => retakeShot(index)}
@@ -571,16 +630,14 @@ export default function Photobooth({ onClose }: PhotoboothProps) {
             </div>
 
             <label className="customizer-label">PHOTO FRAME</label>
-
             <div className="frame-options">
               {frames.map(item => (
                 <button
                   type="button"
                   key={item.id}
-                  className={`frame-option ${
-                    selectedFrame === item.id ? 'selected' : ''
-                  }`}
+                  className={`frame-option ${selectedFrame === item.id ? 'selected' : ''}`}
                   onClick={() => setSelectedFrame(item.id)}
+                  aria-pressed={selectedFrame === item.id}
                 >
                   <span
                     className="frame-option-swatch"
@@ -588,29 +645,47 @@ export default function Photobooth({ onClose }: PhotoboothProps) {
                   >
                     <Heart size={17} />
                   </span>
-
                   <span className="frame-option-text">
                     <strong>{item.name}</strong>
                     <small>{item.description}</small>
                   </span>
-
-                  {selectedFrame === item.id && (
-                    <Check size={17} className="option-check" />
-                  )}
+                  {selectedFrame === item.id && <Check size={17} className="option-check" />}
                 </button>
               ))}
             </div>
 
-            <label className="customizer-label">STRIP BACKGROUND</label>
+            <label className="customizer-label">PHOTO STICKERS</label>
+            <div className="sticker-options">
+              {stickers.map(sticker => {
+                const selected = selectedStickers.includes(sticker.id)
+                return (
+                  <button
+                    type="button"
+                    key={sticker.id}
+                    className={`sticker-option ${selected ? 'selected' : ''}`}
+                    aria-pressed={selected}
+                    onClick={() => {
+                      setSelectedStickers(previous =>
+                        selected
+                          ? previous.filter(id => id !== sticker.id)
+                          : [...previous, sticker.id],
+                      )
+                    }}
+                  >
+                    <span>{sticker.symbol}</span>
+                    <small>{sticker.name}</small>
+                  </button>
+                )
+              })}
+            </div>
 
+            <label className="customizer-label">STRIP BACKGROUND</label>
             <div className="background-options">
               {backgrounds.map(item => (
                 <button
                   type="button"
                   key={item.id}
-                  className={`background-option ${
-                    selectedBackground === item.id ? 'selected' : ''
-                  }`}
+                  className={`background-option ${selectedBackground === item.id ? 'selected' : ''}`}
                   onClick={() => setSelectedBackground(item.id)}
                   aria-label={`Select ${item.name} background`}
                   aria-pressed={selectedBackground === item.id}
@@ -622,9 +697,7 @@ export default function Photobooth({ onClose }: PhotoboothProps) {
               ))}
             </div>
 
-            <label className="customizer-label" htmlFor="pix-caption">
-              STRIP CAPTION
-            </label>
+            <label className="customizer-label" htmlFor="pix-caption">STRIP CAPTION</label>
             <input
               id="pix-caption"
               className="customizer-input"
@@ -682,9 +755,7 @@ export default function Photobooth({ onClose }: PhotoboothProps) {
             )}
 
             {exportError && (
-              <p className="export-error" role="alert">
-                {exportError}
-              </p>
+              <p className="export-error" role="alert">{exportError}</p>
             )}
           </aside>
         </div>
