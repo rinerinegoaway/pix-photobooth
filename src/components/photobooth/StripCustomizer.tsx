@@ -48,7 +48,7 @@ export function BackgroundPicker({ value, onChange }: { value: BackgroundId; onC
               onClick={() => onChange(item.id as BackgroundId)}
               className={`grid h-11 w-11 place-items-center rounded-full border border-line ${
                 value === item.id ? 'outline-2 outline-offset-2 outline-coral' : ''
-              } ${item.id === 'speckle' ? 'paper-texture' : ''}`}
+              } `}
               style={{ backgroundColor: item.color }}
             >
               {value === item.id && (
@@ -148,7 +148,7 @@ export function StripCustomizer({ style, onChange, shared = false, layoutOnly = 
         <BackgroundPicker value={style.background} onChange={background => onChange({ background })} />
       </Section>
 
-      <Section title="Decorations">
+      <Section title="Auto decorations (every photo)">
         <div className="flex flex-wrap gap-2">
           {stickers.map(item => (
             <button key={item.id} type="button" className="option !py-1.5" aria-pressed={style.stickers.includes(item.id)} onClick={() => toggleSticker(item.id)}>
@@ -163,7 +163,7 @@ export function StripCustomizer({ style, onChange, shared = false, layoutOnly = 
         <div className="flex flex-col gap-3">
           <label className="block">
             <span className="mb-1 block text-sm font-medium">Caption</span>
-            <input className="field" value={style.caption} maxLength={40} placeholder="a little closer" onChange={event => onChange({ caption: event.target.value })} />
+            <input className="field" value={style.caption} maxLength={40} placeholder="a forever memory" onChange={event => onChange({ caption: event.target.value })} />
           </label>
           <label className="block">
             <span className="mb-1 block text-sm font-medium">

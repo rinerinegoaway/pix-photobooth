@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -6 132 92" width="528" height="368">
+<defs><filter id="die" x="-12%" y="-12%" width="124%" height="124%"><feMorphology in="SourceAlpha" operator="dilate" radius="2.8" result="grow"/><feFlood flood-color="#ffffff"/><feComposite in2="grow" operator="in" result="border"/><feMerge><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<g filter="url(#die)">
+<g transform="rotate(-14 70 38)">
+<path d="M60 36 L44 14 Q42 11 46 11 L56 12 L74 34 Z" fill="#CDB9F0"/>
+<path d="M30 34 L18 20 Q16 17 20 17 L28 18 L40 32 Z" fill="#FF8FA5"/>
+<path d="M24 38 Q24 28 40 28 L92 28 Q112 30 112 40 Q112 50 92 52 L40 52 Q24 50 24 38 Z" fill="#BBDDF4"/>
+<path d="M96 30 Q112 32 112 40 Q112 48 100 51 Q106 40 96 30 Z" fill="#fff" fill-opacity="0.45"/>
+<path d="M58 44 L40 68 Q38 71 42 71 L54 70 L80 46 Z" fill="#FF8FA5"/>
+<g fill="#fff"><circle cx="50" cy="39" r="3.2"/><circle cx="62" cy="39" r="3.2"/><circle cx="74" cy="39" r="3.2"/></g>
+<path d="M86 32 Q99 33 102 40 L86 40 Z" fill="#EEF5FC"/>
+</g>
+<path transform="translate(14 60) scale(.4)" d="M0 22 C-6 16 -26 4 -26 -10 C-26 -24 -8 -26 0 -12 C8 -26 26 -24 26 -10 C26 4 6 16 0 22 Z" fill="#F4778B"/>
+</g>
+</svg>

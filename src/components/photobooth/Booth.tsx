@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useCamera } from '../../hooks/useCamera'
+import { useMediaQuery } from '../../hooks/useMediaQuery'
 import { formatElapsed, useSessionRecording } from '../../hooks/useSessionRecording'
 import { grabFrame } from '../../lib/capture'
 import { sendEvent } from '../../lib/community'
@@ -53,6 +54,7 @@ const emptyShots = () => Array<Shot | null>(SHOTS_PER_SESSION).fill(null)
 export function Booth({ mode }: { mode: 'solo' | 'together' }) {
   const camera = useCamera()
   const recording = useSessionRecording()
+  const wide = useMediaQuery('(min-width: 1024px)')
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const setVideo = useCallback((node: HTMLVideoElement | null) => {
     videoRef.current = node
@@ -206,7 +208,7 @@ export function Booth({ mode }: { mode: 'solo' | 'together' }) {
       <Stepper steps={BOOTH_STEPS} current={step} />
       <div>
         <p className="t-meta">{modeName}</p>
-        <h1 className="t-page mt-1">{cameraOn ? (running ? `Photo ${current + 1} of ${SHOTS_PER_SESSION}` : 'Strike a pose.') : mode === 'together' ? 'Squeeze in close.' : 'Just you.'}</h1>
+        <h1 className="t-page mt-1">{cameraOn ? (running ? `Photo ${current + 1} of ${SHOTS_PER_SESSION}` : <>Strike a pose.</>) : mode === 'together' ? <>Squeeze in close.</> : <>Just you.</>}</h1>
         <p className="t-body mt-1">
           {mode === 'together'
             ? 'Both of you sit in front of this one device. Set your countdown, press start, and the booth takes all four photos for you.'
@@ -214,8 +216,8 @@ export function Booth({ mode }: { mode: 'solo' | 'together' }) {
         </p>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_21rem]">
-        <div className="flex flex-col gap-4">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_21rem] lg:gap-x-8">
+        <div className="flex flex-col gap-4 lg:col-start-1 lg:row-start-1">
           {cameraOn ? (
             <CameraPreview
               stream={camera.stream}
@@ -278,7 +280,7 @@ export function Booth({ mode }: { mode: 'solo' | 'together' }) {
               ) : (
                 <button
                   type="button"
-                  className="btn btn-primary"
+                  className="btn btn-primary flex-1 sm:flex-none"
                   onClick={() => (allTaken ? setStage('post') : void capture(retaking !== null ? [retaking] : emptySlots))}
                 >
                   {buttonLabel}
@@ -299,12 +301,18 @@ export function Booth({ mode }: { mode: 'solo' | 'together' }) {
               </span>
             </div>
           )}
-
-          <PhotoReview shots={shots} style={style} onRetake={running ? undefined : retake} activeSlot={retaking} />
         </div>
 
-        <aside className="flex flex-col gap-6" aria-label="Session setup">
-          <div className="card flex flex-col gap-6 p-5">
+        <aside className="flex flex-col gap-6 lg:col-start-2 lg:row-span-2 lg:row-start-1" aria-label="Session setup">
+          {/* On phones the settings sit right under the Start button and can be folded away. */}
+          <details key={String(wide)} open={wide} className="card">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 font-extrabold lg:hidden">
+              Session settings
+              <span className="text-sm font-semibold text-muted">
+                {settings.countdown}s · {settings.record ? 'recording' : 'no recording'}
+              </span>
+            </summary>
+            <div className="flex flex-col gap-6 p-5 pt-2 lg:pt-5">
             <SessionSettings value={settings} onChange={patchSettings} disabled={running} />
             <div>
               <h2 className="t-label mb-2">Strip layout</h2>
@@ -314,8 +322,9 @@ export function Booth({ mode }: { mode: 'solo' | 'together' }) {
               <h2 className="t-label mb-2">Background</h2>
               <BackgroundPicker value={style.background} onChange={background => patchStyle({ background })} />
             </div>
-          </div>
-          <div className="card p-4">
+            </div>
+          </details>
+          <div className="card hidden p-4 lg:block">
             <p className="t-label mb-3">Your strip, as you shoot</p>
             <div className="mx-auto w-full max-w-[11rem]">
               <PhotoStripPreview style={style} shots={shots} quality={0.5} label="Your photo strip filling up as you take photos" />
@@ -323,6 +332,10 @@ export function Booth({ mode }: { mode: 'solo' | 'together' }) {
             <p className="mt-3 text-xs text-muted">Frames, stickers and words come after the photos.</p>
           </div>
         </aside>
+
+        <div className="lg:col-start-1 lg:row-start-2">
+          <PhotoReview shots={shots} style={style} onRetake={running ? undefined : retake} activeSlot={retaking} />
+        </div>
       </div>
     </div>
   )

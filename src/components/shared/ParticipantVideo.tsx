@@ -17,7 +17,8 @@ interface Props {
 
 export function ParticipantVideo({ label, stream, mirrored, muted, videoRef, countdown, flash, flashEnabled = true, emptyMessage, local = false }: Props) {
   return (
-    <figure className="card card-print relative m-0 aspect-[4/3] w-full overflow-hidden bg-ink">
+    <figure className="mat relative m-0 w-full">
+      <div className="mat-inner aspect-[4/3]">
       {stream ? (
         <LiveVideo stream={stream} mirrored={mirrored} muted={muted} videoRef={videoRef} label={`${label}’s camera`} />
       ) : (
@@ -31,12 +32,13 @@ export function ParticipantVideo({ label, stream, mirrored, muted, videoRef, cou
       </figcaption>
       {countdown !== null && (
         <div className="pointer-events-none absolute inset-0 grid place-items-center bg-ink/25" aria-hidden="true">
-          <span key={countdown} className="anim-pop font-extrabold text-[6rem] leading-none text-paper drop-shadow-[0_4px_14px_rgba(36,33,36,0.5)] sm:text-[8rem]">
+          <span key={countdown} className="anim-pop font-extrabold text-[6rem] leading-none text-paper drop-shadow-[0_4px_14px_rgba(40,38,41,0.5)] sm:text-[8rem]">
             {countdown}
           </span>
         </div>
       )}
       <Shutter flash={flash} flashEnabled={flashEnabled} />
+      </div>
     </figure>
   )
 }

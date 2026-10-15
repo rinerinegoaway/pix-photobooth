@@ -2,7 +2,7 @@ import { BOOTH_STEPS } from '../../lib/steps'
 
 export function Stepper({ steps = BOOTH_STEPS, current }: { steps?: readonly string[]; current: number }) {
   return (
-    <ol className="m-0 flex list-none flex-wrap items-center gap-x-2 gap-y-2 p-0" aria-label="Progress">
+    <ol className="m-0 flex list-none flex-wrap items-center gap-x-1.5 gap-y-2 p-0 sm:gap-x-2" aria-label="Progress">
       {steps.map((step, index) => {
         const done = index < current
         const active = index === current
@@ -16,7 +16,7 @@ export function Stepper({ steps = BOOTH_STEPS, current }: { steps?: readonly str
             >
               {done ? '✓' : index + 1}
             </span>
-            <span className={`text-sm ${active ? 'font-extrabold' : 'font-semibold text-muted'}`}>
+            <span className={`text-sm ${active ? 'font-extrabold' : 'hidden font-semibold text-muted sm:inline'}`}>
               {step}
               <span className="sr-only">{done ? ' (done)' : active ? ' (current step)' : ''}</span>
             </span>

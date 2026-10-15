@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useFontsVersion } from '../../hooks/useFontsVersion'
+import { ensureStickers } from '../../lib/stickers'
 import { drawCell, drawStrip, ensureFont, geometry } from '../../lib/strip'
 import type { Shot, StripStyle } from '../../lib/strip'
 
@@ -22,7 +23,7 @@ export function PhotoStripPreview({ style, shots, quality = 0.9, className = '',
     let cancelled = false
     const canvas = ref.current
     if (!canvas) return
-    void ensureFont(style.font).then(() => {
+    void Promise.all([ensureFont(style.font), ensureStickers(style.placed.map(item => item.kind))]).then(() => {
       if (cancelled) return
       const ctx = canvas.getContext('2d')
       if (!ctx) return

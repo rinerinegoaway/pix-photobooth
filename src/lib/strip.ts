@@ -4,10 +4,13 @@
 
 export type LayoutId = 'classic' | 'grid' | 'card'
 export type FrameId = 'clean' | 'film' | 'soft' | 'taped'
-export type BackgroundId = 'ivory' | 'speckle' | 'butter' | 'blush' | 'coral' | 'white' | 'charcoal'
+export type BackgroundId = 'ivory' | 'speckle' | 'butter' | 'blush' | 'lavender' | 'sky' | 'mint' | 'coral' | 'white' | 'charcoal'
 export type StickerId = 'hearts' | 'sparkles' | 'flowers' | 'smiles' | 'cherries'
 export type FontId = 'clean' | 'italic' | 'hand' | 'bold'
 export type TextColorId = 'auto' | 'ink' | 'cream' | 'coral'
+
+import { drawPlacedStickers, ensureStickers } from './stickers'
+import type { PlacedSticker } from './stickers'
 
 export type Surface = HTMLCanvasElement | ImageBitmap
 
@@ -35,17 +38,19 @@ export interface StripStyle {
   date: string
   /** Optional small ". PIX" tag. Off by default: keepsakes stay unbranded unless the user opts in. */
   showBrand: boolean
+  /** Free-form stickers placed by the user. Editable overlay data: the photos are never modified. */
+  placed: PlacedSticker[]
   arrangement: Arrangement
 }
 
-export const INK = '#242124'
-export const CREAM = '#FFF9F0'
+export const INK = '#282629'
+export const CREAM = '#FAF8F5'
 export const COLORS = {
   ink: INK,
   cream: CREAM,
-  coral: '#FF5576',
-  butter: '#F7E8A4',
-  blush: '#FFE3E8',
+  coral: '#F4778B',
+  butter: '#F9DF75',
+  blush: '#F7E8EA',
   white: '#FFFFFF',
 }
 
@@ -67,6 +72,9 @@ export const backgrounds: { id: BackgroundId; name: string; color: string; dark:
   { id: 'speckle', name: 'Speckled paper', color: CREAM, dark: false },
   { id: 'butter', name: 'Butter', color: COLORS.butter, dark: false },
   { id: 'blush', name: 'Blush', color: COLORS.blush, dark: false },
+  { id: 'lavender', name: 'Lavender', color: '#CDB9F0', dark: false },
+  { id: 'sky', name: 'Powder blue', color: '#BBDDF4', dark: false },
+  { id: 'mint', name: 'Mint', color: '#BFE4D8', dark: false },
   { id: 'coral', name: 'Coral', color: COLORS.coral, dark: false },
   { id: 'white', name: 'White', color: COLORS.white, dark: false },
   { id: 'charcoal', name: 'Charcoal', color: INK, dark: true },
@@ -108,13 +116,14 @@ export const defaultStyle = (): StripStyle => ({
   frame: 'clean',
   background: 'ivory',
   stickers: ['hearts'],
-  caption: 'a little closer',
+  caption: 'a forever memory',
   names: '',
   font: 'hand',
   textColor: 'auto',
   showDate: true,
   date: formatDate(new Date()),
   showBrand: false,
+  placed: [],
   arrangement: { orientation: 'side', mineFirst: true },
 })
 
@@ -334,7 +343,7 @@ export function drawBackground(ctx: CanvasRenderingContext2D, id: BackgroundId, 
       const r = 0.5 + rand() * 1.3
       const tint = rand()
       ctx.fillStyle =
-        tint > 0.93 ? 'rgba(255, 85, 118, 0.4)' : tint > 0.86 ? 'rgba(247, 232, 164, 0.9)' : 'rgba(36, 33, 36, 0.14)'
+        tint > 0.93 ? 'rgba(244, 119, 139, 0.4)' : tint > 0.86 ? 'rgba(249, 223, 117, 0.9)' : 'rgba(40, 38, 41, 0.14)'
       ctx.beginPath()
       ctx.arc(x, y, r, 0, Math.PI * 2)
       ctx.fill()
@@ -424,7 +433,7 @@ export function drawCell(
 
   ctx.save()
   if (!dark) {
-    ctx.shadowColor = 'rgba(36, 33, 36, 0.22)'
+    ctx.shadowColor = 'rgba(40, 38, 41, 0.22)'
     ctx.shadowBlur = 14
     ctx.shadowOffsetY = 4
   }
@@ -446,7 +455,7 @@ export function drawCell(
   } else {
     ctx.fillStyle = COLORS.blush
     ctx.fillRect(px, py, pw, ph)
-    ctx.fillStyle = 'rgba(36, 33, 36, 0.3)'
+    ctx.fillStyle = 'rgba(40, 38, 41, 0.3)'
     ctx.font = `800 ${Math.round(Math.min(pw, ph) * 0.22)}px "Nunito", system-ui, sans-serif`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
@@ -466,7 +475,7 @@ export function drawCell(
   }
 
   if (style.frame === 'taped') {
-    ctx.fillStyle = index % 2 === 0 ? 'rgba(247, 232, 164, 0.92)' : 'rgba(255, 85, 118, 0.55)'
+    ctx.fillStyle = index % 2 === 0 ? 'rgba(249, 223, 117, 0.92)' : 'rgba(244, 119, 139, 0.55)'
     for (const [tx, angle] of [
       [w * 0.14, -0.5],
       [w * 0.86, 0.5],
@@ -503,7 +512,7 @@ export function drawStrip(
   drawBackground(ctx, style.background, geo.width, geo.height)
 
   if (geo.cardBorder) {
-    ctx.strokeStyle = isDark(style) ? 'rgba(255, 249, 240, 0.6)' : 'rgba(36, 33, 36, 0.35)'
+    ctx.strokeStyle = isDark(style) ? 'rgba(255, 249, 240, 0.6)' : 'rgba(40, 38, 41, 0.35)'
     ctx.lineWidth = 1.5
     ctx.setLineDash([2, 6])
     ctx.lineCap = 'round'
@@ -520,6 +529,8 @@ export function drawStrip(
   })
 
   drawCaption(ctx, style, geo.width / 2, geo.textY, geo.width - 110)
+  // Placed stickers go last so they sit on top of photos, frame and words.
+  drawPlacedStickers(ctx, style.placed, geo.width, geo.height)
   ctx.restore()
 }
 
@@ -570,6 +581,7 @@ export function drawCaption(ctx: CanvasRenderingContext2D, style: StripStyle, cx
 /** Renders a finished strip at the given scale to a PNG blob. Always waits for the caption font. */
 export async function renderStripBlob(style: StripStyle, shots: Shot[], scale = 2): Promise<Blob> {
   await ensureFont(style.font)
+  await ensureStickers(style.placed.map(item => item.kind))
   const geo = geometry(style.layout)
   const canvas = document.createElement('canvas')
   canvas.width = Math.round(geo.width * scale)

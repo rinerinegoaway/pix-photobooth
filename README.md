@@ -61,6 +61,15 @@ bun test           # signaling-server tests (rooms, resume, coordinated countdow
 - **Video**: the strip's own scenes drawn to a canvas and recorded with `MediaRecorder` in real time (6/10/15 s). MP4 is used only when the browser can really encode it; otherwise WebM. The file extension follows the actual encoding. Keep the tab open during recording. No audio is included.
 - Neither export contains a ". PIX" signature; only the caption, names and date the user chose appear.
 
+## Stickers and editable text on the strip
+
+In the Style step people can decorate the actual strip:
+
+- **Stickers**: rainbow, airplane, flower, heart, sparkle and smile, stored as transparent SVG files in `src/assets/stickers/`. Pick one to add it, then drag it anywhere (over a photo or the frame), pull the round handles to resize/rotate, remove it with the x, or use the toolbar and keyboard (arrow keys move, + and - resize, [ and ] rotate, Delete removes). Add as many as you like.
+- **Caption and names**: tap the words on the strip (or the caption area) to edit them in place. The caption, names, font and color controls in the panel edit the same values.
+- Stickers are overlay data (`style.placed`: position, size and rotation as fractions of the strip). The captured photos are never modified, so everything stays movable without retaking.
+- Stickers are drawn by the same canvas renderer as the preview, the PNG and the video, so they appear in the download exactly where they were placed. They are not HTML overlays. The selection box and handles are interface only and are not exported.
+
 ## Behind-the-scenes recording
 
 Optional, off by default ("Save a behind-the-scenes video" in the session panel). When on, recording starts before the first countdown and stops about a second after the last photo, so it contains the real posing, countdowns and reactions. It is **not** made from the photos.

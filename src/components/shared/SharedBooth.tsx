@@ -362,7 +362,7 @@ export function SharedBooth({ joinCode }: { joinCode: string | null }) {
                 {formError}
               </p>
             )}
-            <button type="button" className="btn btn-primary self-start" onClick={proceed}>
+            <button type="button" className="btn btn-primary w-full sm:w-auto sm:self-start" onClick={proceed}>
               Continue
             </button>
           </div>
@@ -416,7 +416,7 @@ export function SharedBooth({ joinCode }: { joinCode: string | null }) {
             )}
             {camera.switchError && <p className="text-sm text-ink">{camera.switchError}</p>}
             <div className="flex flex-wrap gap-3">
-              <button type="button" className="btn btn-primary" disabled={camera.status !== 'ready'} onClick={() => void enter()}>
+              <button type="button" className="btn btn-primary w-full sm:w-auto" disabled={camera.status !== 'ready'} onClick={() => void enter()}>
                 {intent === 'create' ? 'Create room' : 'Join room'}
               </button>
               {camera.devices.length > 1 && camera.status === 'ready' && (
@@ -524,8 +524,8 @@ export function SharedBooth({ joinCode }: { joinCode: string | null }) {
       )}
 
       {hostWaiting && snap.roomId && (
-        <section className="card card-print flex flex-col gap-3 bg-butter p-4 sm:p-5" aria-labelledby="invite-heading">
-          <h2 id="invite-heading" className="t-section !text-xl">
+        <section className="card card-print flex flex-col gap-3 bg-blush p-4 sm:p-5" aria-labelledby="invite-heading">
+          <h2 id="invite-heading" className="t-card">
             Invite your person
           </h2>
           <p className="text-sm">Anyone with this link can join, and the room holds two people. Share it only with them.</p>
@@ -599,7 +599,7 @@ export function SharedBooth({ joinCode }: { joinCode: string | null }) {
             Review photos
           </button>
         ) : (
-          <button type="button" className="btn btn-primary" disabled={!canShoot} onClick={() => startSession(retakeSlots)}>
+          <button type="button" className="btn btn-primary w-full sm:w-auto" disabled={!canShoot} onClick={() => startSession(retakeSlots)}>
             {taken === 0 ? 'Start 4-photo session' : `Take remaining ${retakeSlots.length}`}
           </button>
         )}

@@ -3,7 +3,7 @@ import type { Tone } from '../../lib/connection'
 import type { RoomSnapshot } from '../../lib/room'
 
 const toneClass: Record<Tone, string> = {
-  ok: 'bg-butter',
+  ok: 'bg-blush',
   wait: 'bg-blush',
   bad: 'bg-coral',
 }

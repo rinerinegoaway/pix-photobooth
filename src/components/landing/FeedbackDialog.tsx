@@ -75,7 +75,7 @@ export function FeedbackDialog({ open, initialType = 'feature', onClose }: Props
   return (
     <dialog
       ref={ref}
-      className={`pix-dialog m-auto w-[min(92vw,34rem)] max-h-[92vh] overflow-y-auto rounded-[24px] border border-line bg-paper p-0 text-ink shadow-[0_30px_80px_-20px_rgba(36,33,36,0.45)] ${closing ? 'is-closing' : ''}`}
+      className={`pix-dialog m-auto w-[min(92vw,34rem)] max-h-[92vh] overflow-y-auto rounded-[var(--radius-float)] border border-line bg-paper p-0 text-ink shadow-[0_30px_80px_-20px_rgba(40,38,41,0.45)] ${closing ? 'is-closing' : ''}`}
       aria-labelledby={`${idBase}-title`}
       onCancel={event => {
         event.preventDefault()

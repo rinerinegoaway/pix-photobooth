@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -6 112 112" width="448" height="448">
+<defs><filter id="die" x="-12%" y="-12%" width="124%" height="124%"><feMorphology in="SourceAlpha" operator="dilate" radius="2.8" result="grow"/><feFlood flood-color="#ffffff"/><feComposite in2="grow" operator="in" result="border"/><feMerge><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<g filter="url(#die)">
+<circle cx="50" cy="50" r="42" fill="#F9DF75"/>
+<g fill="#282629"><circle cx="37" cy="44" r="4.5"/><circle cx="63" cy="44" r="4.5"/></g>
+<path d="M34 58 Q50 76 66 58" fill="none" stroke="#282629" stroke-width="4.5" stroke-linecap="round"/>
+<g fill="#FF8FA5" fill-opacity="0.7"><circle cx="27" cy="59" r="6"/><circle cx="73" cy="59" r="6"/></g>
+</g>
+</svg>

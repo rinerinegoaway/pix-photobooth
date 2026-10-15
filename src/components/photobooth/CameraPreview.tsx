@@ -50,11 +50,12 @@ interface CameraPreviewProps {
 
 export function CameraPreview({ stream, mirrored, videoRef, countdown, flash, flashEnabled = true, badge, hint, guide, children, className = '' }: CameraPreviewProps) {
   return (
-    <div className={`card card-print relative aspect-[4/3] w-full overflow-hidden bg-ink ${className}`}>
+    <div className={`mat relative w-full ${className}`}>
+      <div className="mat-inner aspect-[4/3]">
       <LiveVideo stream={stream} mirrored={mirrored} videoRef={videoRef} label="Your camera preview" />
       {guide === 'together' && countdown === null && (
         <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 400 300" aria-hidden="true">
-          <g fill="none" stroke="#fbf7ee" strokeWidth="2" strokeDasharray="6 6" opacity="0.7">
+          <g fill="none" stroke="#FAF8F5" strokeWidth="2" strokeDasharray="6 6" opacity="0.7">
             <ellipse cx="140" cy="125" rx="48" ry="58" />
             <path d="M52 300 C52 220 90 190 140 190 C190 190 228 220 228 300" />
             <ellipse cx="262" cy="125" rx="48" ry="58" />
@@ -67,7 +68,7 @@ export function CameraPreview({ stream, mirrored, videoRef, countdown, flash, fl
       )}
       {countdown !== null && (
         <div className="pointer-events-none absolute inset-0 grid place-items-center bg-ink/25" aria-live="assertive">
-          <span key={countdown} className="anim-pop font-extrabold text-[7rem] leading-none text-paper drop-shadow-[0_4px_14px_rgba(36,33,36,0.5)] sm:text-[9rem]">
+          <span key={countdown} className="anim-pop font-extrabold text-[7rem] leading-none text-paper drop-shadow-[0_4px_14px_rgba(40,38,41,0.5)] sm:text-[9rem]">
             {countdown}
           </span>
         </div>
@@ -77,6 +78,7 @@ export function CameraPreview({ stream, mirrored, videoRef, countdown, flash, fl
         <p className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-extrabold tracking-widest">{badge}</p>
       )}
       {children}
+      </div>
     </div>
   )
 }

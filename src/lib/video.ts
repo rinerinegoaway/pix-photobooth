@@ -1,3 +1,4 @@
+import { ensureStickers } from './stickers'
 import { backgrounds, drawBackground, drawCaption, drawCell, drawStrip, ensureFont, geometry } from './strip'
 import type { Shot, StripStyle } from './strip'
 
@@ -58,6 +59,7 @@ export async function exportVideo({ style, shots, duration, onProgress, signal }
     throw new Error('This browser cannot record video. Your PNG download still works.')
   }
   await ensureFont(style.font)
+  await ensureStickers(style.placed.map(item => item.kind))
 
   const canvas = document.createElement('canvas')
   canvas.width = W
@@ -219,7 +221,7 @@ export async function exportVideo({ style, shots, duration, onProgress, signal }
 /** Small "1 / 4" style progress dots under the photo, in the strip's text color. */
 function drawCaptionLine(ctx: CanvasRenderingContext2D, style: StripStyle, index: number, count: number) {
   const dark = backgrounds.find(item => item.id === style.background)?.dark ?? false
-  const color = dark ? '#FFF9F0' : '#242124'
+  const color = dark ? '#FAF8F5' : '#282629'
   const gap = 20
   const start = -((count - 1) * gap) / 2
   for (let i = 0; i < count; i++) {

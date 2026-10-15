@@ -48,7 +48,7 @@ function drawCover(ctx: CanvasRenderingContext2D, source: RecordingSource, x: nu
   ctx.rect(x, y, w, h)
   ctx.clip()
   if (!video || video.readyState < 2 || !video.videoWidth) {
-    ctx.fillStyle = '#FFE3E8'
+    ctx.fillStyle = '#F7E8EA'
     ctx.fillRect(x, y, w, h)
   } else {
     const scale = Math.max(w / video.videoWidth, h / video.videoHeight)

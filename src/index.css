@@ -6,24 +6,25 @@
  * Six colors: ivory, butter, coral, charcoal, white, blush.
  */
 @theme {
-  --color-paper: #fff9f0; /* warm ivory: page background */
-  --color-butter: #f7e8a4; /* soft butter: small accents */
-  --color-coral: #ff5576; /* actions, hearts, selected states */
-  --color-ink: #242124; /* charcoal: text */
-  --color-white: #ffffff; /* cards, frames */
-  --color-blush: #ffe3e8; /* secondary surfaces */
-  --color-muted: #6a6368; /* charcoal, softened for body copy (5.3:1 on ivory) */
-  --color-line: rgb(36 33 36 / 0.12);
+  --color-paper: #FAF8F5; /* warm ivory: page background */
+  --color-white: #ffffff; /* cards and photo surfaces */
+  --color-blush: #F7E8EA; /* soft blush: quiet surfaces and selected states */
+  --color-coral: #f4778b; /* muted coral: the one accent */
+  --color-ink: #282629; /* deep charcoal: text */
+  --color-muted: #777176; /* muted gray */
+  --color-soft: #777176; /* hints and meta (same muted gray) */
+  --color-line: #e9e3de; /* subtle border */
 
   --font-ui: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-hand: "Caveat", "Segoe Script", "Bradley Hand", cursive;
-  /* Headings use the primary family too; kept as a token so one change restyles every heading. */
   --font-display: var(--font-ui);
 
+  /* Corner radii: cards and photo surfaces, floating surfaces, controls. */
   --radius-card: 20px;
-  --radius-control: 14px;
-  --shadow-soft: 0 10px 30px -14px rgb(36 33 36 / 0.22);
-  --shadow-lift: 0 14px 34px -14px rgb(36 33 36 / 0.3);
+  --radius-float: 24px;
+  --radius-control: 12px;
+  --shadow-soft: 0 8px 28px -16px rgb(40 38 41 / 0.28);
+  --shadow-lift: 0 12px 32px -16px rgb(40 38 41 / 0.32);
 }
 
 @layer base {
@@ -60,7 +61,7 @@
   h2,
   h3 {
     margin: 0;
-    font-weight: 800;
+    font-weight: 700;
   }
   p {
     margin: 0;
@@ -82,13 +83,13 @@
 @layer components {
   /* ---- Type scale ---- */
   .t-display {
-    font-size: clamp(2.4rem, 5.6vw, 4rem);
+    font-size: clamp(2rem, 4.6vw, 3.2rem);
     line-height: 1.06;
     letter-spacing: -0.03em;
-    font-weight: 800;
+    font-weight: 700;
   }
   .t-page {
-    font-size: clamp(1.8rem, 3.6vw, 2.5rem);
+    font-size: clamp(1.6rem, 3vw, 2.15rem);
     line-height: 1.12;
     letter-spacing: -0.02em;
   }
@@ -97,6 +98,13 @@
     line-height: 1.25;
     letter-spacing: -0.01em;
     font-weight: 800;
+  }
+  /* Card titles: the step below section headings. */
+  .t-card {
+    font-size: 1.25rem;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    font-weight: 700;
   }
   .t-body {
     font-size: 1.0625rem;
@@ -144,19 +152,6 @@
     }
   }
 
-  /* Soft butter and blush washes with a delicate dotted pattern. */
-  .paper-texture {
-    background-color: var(--color-paper);
-    background-image:
-      radial-gradient(rgb(36 33 36 / 0.1) 1px, transparent 1.4px),
-      radial-gradient(60rem 28rem at 8% -10%, rgb(247 232 164 / 0.55), transparent 70%),
-      radial-gradient(46rem 26rem at 100% 100%, rgb(255 227 232 / 0.8), transparent 70%);
-    background-size:
-      22px 22px,
-      auto,
-      auto;
-  }
-
   /* ---- Buttons ---- */
   .btn {
     display: inline-flex;
@@ -167,7 +162,7 @@
     padding: 0.65rem 1.4rem;
     border: 1.5px solid transparent;
     border-radius: var(--radius-control);
-    font-weight: 800;
+    font-weight: 700;
     font-size: 0.95rem;
     line-height: 1.2;
     text-decoration: none;
@@ -187,21 +182,21 @@
   .btn-primary {
     background: var(--color-coral);
     color: var(--color-ink);
-    box-shadow: 0 8px 18px -10px rgb(255 85 118 / 0.9);
+    
   }
   .btn-primary:not(:disabled):hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 22px -10px rgb(255 85 118 / 0.95);
+    transform: translateY(-1px);
+    
     background: #ff6584;
   }
   .btn-secondary {
     background: var(--color-white);
     color: var(--color-ink);
     border-color: var(--color-line);
-    box-shadow: 0 4px 12px -8px rgb(36 33 36 / 0.3);
+    
   }
   .btn-secondary:not(:disabled):hover {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
     border-color: var(--color-ink);
   }
   .btn-quiet {
@@ -214,6 +209,12 @@
   .btn-danger {
     background: var(--color-ink);
     color: var(--color-paper);
+  }
+  .btn-lg {
+    min-height: 3.6rem;
+    padding: 0.8rem 1.9rem;
+    font-size: 1.1rem;
+    border-radius: var(--radius-control);
   }
   .btn-sm {
     min-height: 2.5rem;
@@ -230,6 +231,26 @@
   .card-print {
     box-shadow: var(--shadow-soft);
   }
+  /* A flat tinted tile for content inside a section (no shadow). */
+  .panel {
+    background: var(--color-paper);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+  }
+  /* A colored mat with a charcoal keyline, like a printed photo frame. Pair with .mat-inner. */
+  .mat {
+    background: var(--color-white);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    padding: 0.5rem;
+    box-shadow: var(--shadow-soft);
+  }
+  .mat-inner {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-control);
+    background: var(--color-ink);
+  }
   .field {
     width: 100%;
     min-height: 3rem;
@@ -241,12 +262,12 @@
     transition: border-color 0.15s ease;
   }
   .field:hover {
-    border-color: rgb(36 33 36 / 0.35);
+    border-color: rgb(40 38 41 / 0.35);
   }
   .field:focus {
     outline: none;
     border-color: var(--color-coral);
-    box-shadow: 0 0 0 4px rgb(255 85 118 / 0.2);
+    box-shadow: 0 0 0 4px rgb(244 119 139 / 0.2);
   }
   .field::placeholder {
     color: #9a9297;
@@ -278,7 +299,7 @@
       border-color 0.15s ease;
   }
   .option:hover {
-    border-color: rgb(36 33 36 / 0.4);
+    border-color: rgb(40 38 41 / 0.4);
   }
   .option[aria-pressed="true"],
   .option[aria-checked="true"] {
@@ -367,7 +388,7 @@ dialog.pix-dialog.is-closing {
   animation: pix-dialog-out 0.16s ease-in forwards;
 }
 dialog.pix-dialog::backdrop {
-  background: rgb(36 33 36 / 0.45);
+  background: rgb(40 38 41 / 0.45);
   backdrop-filter: blur(2px);
 }
 dialog.pix-dialog[open]::backdrop {

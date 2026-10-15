@@ -26,7 +26,7 @@ export function BehindTheScenes({ state, notice, shared = false }: Props) {
           style={{ maxHeight: '28rem' }}
         />
         <div className="flex flex-wrap items-center gap-3">
-          <button type="button" className="btn btn-primary" onClick={() => downloadBlob(result.blob, name)}>
+          <button type="button" className="btn btn-primary w-full sm:w-auto" onClick={() => downloadBlob(result.blob, name)}>
             Download video ({result.ext.toUpperCase()})
           </button>
           <span className="text-sm text-muted">

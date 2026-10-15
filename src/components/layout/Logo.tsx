@@ -1,13 +1,13 @@
 import { SWOOSH_PATH } from './logoPaths'
 
-// . PIX by Rine wordmark: coral dot, a bold charcoal "P" holding a heart photo strip, an "i" topped
+// . PIX by Rine wordmark: a bold charcoal "P" holding a heart photo strip, an "i" topped
 // with a heart, and an "X" crossed by a coral brush stroke that finishes as the script "R".
 // Flat brand colors only: no outlines, no shadows.
 
-const INK = '#242124'
-const CORAL = '#FF5576'
-const BUTTER = '#F7E8A4'
-const BLUSH = '#FFE3E8'
+const INK = '#282629'
+const CORAL = '#F4778B'
+const BUTTER = '#F9DF75'
+const BLUSH = '#F7E8EA'
 
 const HEART = 'M0 22 C-6 16 -26 4 -26 -10 C-26 -24 -8 -26 0 -12 C8 -26 26 -24 26 -10 C26 4 6 16 0 22 Z'
 
@@ -15,25 +15,29 @@ function Heart({ x, y, s, fill }: { x: number; y: number; s: number; fill: strin
   return <path transform={`translate(${x} ${y}) scale(${s})`} d={HEART} fill={fill} />
 }
 
-/** The "P" with its photo strip, plus the leading dot. Shared by the mark and the full wordmark. */
+/**
+ * The "P": a tall stem that drops below the baseline, a bowl with a clearly open counter, and the
+ * heart photo strip sitting on the stem.
+ */
 function PGlyph() {
   return (
     <>
-      <circle cx="52" cy="290" r="40" fill={CORAL} />
       <path
-        d="M150 305 V110 H225 C300 110 330 145 330 195 C330 245 300 280 225 280 H150"
+        d="M150 322 V110 H214 C290 110 322 142 322 186 C322 230 290 264 214 264 H150"
         fill="none"
         stroke={INK}
-        strokeWidth="104"
+        strokeWidth="66"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <g transform="rotate(6 190 200)">
-        <rect x="138" y="70" width="112" height="240" rx="16" fill="#FFFFFF" />
-        <rect x="152" y="104" width="84" height="84" rx="10" fill={BLUSH} />
-        <rect x="152" y="204" width="84" height="84" rx="10" fill={BLUSH} />
-        <Heart x={194} y={148} s={0.95} fill={CORAL} />
-        <Heart x={194} y={248} s={0.95} fill={CORAL} />
+      <g transform="rotate(5 150 215)">
+        <rect x="121" y="92" width="58" height="232" rx="14" fill="#FFFFFF" />
+        <rect x="128" y="112" width="44" height="44" rx="8" fill={BLUSH} />
+        <rect x="128" y="170" width="44" height="44" rx="8" fill={BLUSH} />
+        <rect x="128" y="228" width="44" height="44" rx="8" fill={BLUSH} />
+        <Heart x={150} y={134} s={0.55} fill={CORAL} />
+        <Heart x={150} y={192} s={0.55} fill={CORAL} />
+        <Heart x={150} y={250} s={0.55} fill={CORAL} />
       </g>
     </>
   )
@@ -41,7 +45,7 @@ function PGlyph() {
 
 export function LogoMark({ className = '' }: { className?: string }) {
   return (
-    <svg viewBox="0 0 330 360" className={className} role="img" aria-label=". PIX">
+    <svg viewBox="95 20 270 380" className={className} role="img" aria-label=". PIX">
       <PGlyph />
     </svg>
   )
@@ -52,7 +56,7 @@ export function Logo({ className = '', signature = true }: { className?: string;
     <svg
       overflow="visible"
       preserveAspectRatio="xMinYMid meet"
-      viewBox={signature ? '-30 0 1140 480' : '-30 20 1140 370'}
+      viewBox={signature ? '80 0 1030 480' : '80 20 1030 395'}
       className={className}
       role="img"
       aria-label={signature ? '. PIX by Rine' : '. PIX'}

@@ -12,7 +12,7 @@ interface Props {
 export function CameraGate({ camera, purpose, startLabel = 'Turn on camera', onStart }: Props) {
   const trouble = camera.status === 'denied' || camera.status === 'unavailable' || camera.status === 'error'
   return (
-    <div className="card card-print flex aspect-[4/3] w-full flex-col items-center justify-center gap-4 bg-blush p-6 text-center">
+    <div className="card card-print relative flex aspect-[4/3] w-full flex-col items-center justify-center gap-4 bg-blush p-6 text-center">
       {camera.status === 'requesting' ? (
         <>
           <p className="anim-pulse font-extrabold text-3xl">Waiting for your camera…</p>
